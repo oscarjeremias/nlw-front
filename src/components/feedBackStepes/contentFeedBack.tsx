@@ -1,7 +1,9 @@
 import { Cloud,Lightbulb,Bug,ArrowLeft } from "phosphor-react";
 import { CloseButton } from "../closeButton";
 import { ScreenShotButton } from "../screenShotButton";
+import { Loading } from "../loading";
 import { useState,FormEvent } from "react";
+import { api }  from "../../lib/api";
 
 interface TypesProps {
 	selectFeedBack: string
@@ -12,15 +14,18 @@ interface TypesProps {
 export function ContentFeedBack({ selectFeedBack,setSelectFeedBack,setFeedBackSent}: TypesProps) {
 	const [screenShot,setScreenShot] = useState<string | null>(null)
 	const [commit,setCommit] = useState("")
+	const [isFeedbackSent,setIsFeedbackSent] = useState<boolean>(false)
 
-	function handleCommit(event:FormEvent) {
+	async function handleCommit(event:FormEvent) {
 		event.preventDefault()
-
-		console.log({
+		setIsFeedbackSent(true)
+		await api.post("/feedback",{
+			type: selectFeedBack,
+			coment: commit,
 			screenShot,
-			commit
 		})
 		setFeedBackSent(true)
+		setIsFeedbackSent(false)
 	}
 	return (
 		<>
@@ -43,7 +48,9 @@ export function ContentFeedBack({ selectFeedBack,setSelectFeedBack,setFeedBackSe
 					</textarea>
 					<div className="flex gap-2">
 						<ScreenShotButton screenShot={screenShot} setScreenShot={setScreenShot} />
-						<button type="submit" className="w-full h-8 bg-brand-500 text-white rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-700 focus:ring-brand-500 hover:bg-brand-300 transition-300 disabled:opacity-50" disabled={commit.length === 0}>Enviar feedback</button>
+						<button type="submit" className="w-full h-8 flex justify-center items-center bg-brand-500 text-white rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-700 focus:ring-brand-500 hover:bg-brand-300 transition-300 disabled:opacity-50" disabled={commit.length === 0 || isFeedbackSent === true}>{
+							isFeedbackSent === true ? <Loading /> : <span>Enviar feedback</span>
+						}</button>
 					</div>
 				</form>
 		</>
